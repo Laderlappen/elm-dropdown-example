@@ -14,7 +14,7 @@ import Http
 type alias Model =
     { name : String
     , player : String
-    , caste : String
+    , word : String
     , wordList : List String
     }
 
@@ -23,8 +23,8 @@ init : ( Model, Cmd Msg )
 init =
     ( {name = ""
     , player = ""
-    , caste = "Dawn"
-    , wordList = []
+    , word = "Dawn"
+    , wordList = ["None"]
     }, fetchWordList )
 
 type alias WordType =
@@ -50,8 +50,9 @@ fetchWordList =
 type Msg
     = EditName String
     | EditPlayer String
-    | EditCaste String
+    | Editword String
     | GotWordList (Result Http.Error WordType)
+    | NewWords
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,14 +64,18 @@ update msg model =
         EditPlayer player ->
             ( {model | player = player}, Cmd.none)
 
-        EditCaste caste ->
-            ( {model | caste = caste}, Cmd.none)
+        Editword word ->
+            ( {model | word = word}, Cmd.none)
 
         GotWordList (Ok wordList) ->
-            ( { model | wordList = wordList.words }, Cmd.none)
+            ( { model | wordList = List.append ["None"] wordList.words }, Cmd.none)
 
         GotWordList (Err _) ->
             ( model, Cmd.none)
+
+        NewWords ->
+            ( { model | wordList = ["None"] }, fetchWordList )
+
 
 ---- VIEW ----
 
@@ -81,22 +86,20 @@ view model =
         div []
             [ input [ placeholder "Name", onInput EditName] []
             , input [ placeholder "Player", onInput EditPlayer] []
-            , casteSelect model.wordList
+            , wordSelect model.wordList
             ]
+        , button [ onClick NewWords ] [text "Get New Words"]
     ]
 
--- casteSelect : List -> Html Msg
-casteSelect words =
+-- wordSelect : List -> Html Msg
+wordSelect words =
     select
-        [ onInput EditCaste]
+        [ onInput Editword]
         ( List.map simpleOption words )
 
 simpleOption : String -> Html msg
 simpleOption val =
     option [ value val ] [ text val ]
-
-castes : List String
-castes = ["Dawn", "Zenith", "Twilight", "Night", "Eclipse"]
 
 ---- PROGRAM ----
 
